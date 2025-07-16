@@ -1,0 +1,8 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+.idea/
+/vintagestory-mods-downloader.sln.DotSettings.user
+/vintagestory-mods-downloader/mods.json
