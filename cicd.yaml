@@ -1,0 +1,5 @@
+﻿build:
+  dockerfile: ./Dockerfile
+  context: .
+release:
+  enabled: true

@@ -5,9 +5,9 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["vintagestory-mods-downloader/vintagestory-mods-downloader.csproj", "vintagestory-mods-downloader/"]
+COPY ["src/vintagestory-mods-downloader/vintagestory-mods-downloader.csproj", "vintagestory-mods-downloader/"]
 RUN dotnet restore "vintagestory-mods-downloader/vintagestory-mods-downloader.csproj"
-COPY . .
+COPY ./src .
 WORKDIR "/src/vintagestory-mods-downloader"
 RUN dotnet build "./vintagestory-mods-downloader.csproj" -c $BUILD_CONFIGURATION -o /app/build
 

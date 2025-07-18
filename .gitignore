@@ -5,4 +5,4 @@ riderModule.iml
 /_ReSharper.Caches/
 .idea/
 /vintagestory-mods-downloader.sln.DotSettings.user
-/vintagestory-mods-downloader/mods.json
+/src/vintagestory-mods-downloader/mods.json
