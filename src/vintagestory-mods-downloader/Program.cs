@@ -1,12 +1,13 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Web;
 using vintagestory_mods_downloader;
 
 Console.WriteLine("Getting list of mods...");
 var filepath = Environment.GetEnvironmentVariable("filepath") ?? "mods.json";
 var latestVersion = Environment.GetEnvironmentVariable("vs-version") ?? await GetLatestStable();
+var downloadPath = Environment.GetEnvironmentVariable("download-path") ?? "./mods";
 Console.WriteLine($"Using latest VS version: {latestVersion}");
 
 if (!File.Exists(filepath))
@@ -24,12 +25,18 @@ using var modClient = new ModHttpClient();
 
 try
 {
-    var mods = await JsonSerializer.DeserializeAsync<HashSet<ModInput>>(File.OpenRead(filepath), serializerSettings);
+    var mods = await JsonSerializer.DeserializeAsync<HashSet<ModInput>>(File.OpenRead(filepath), serializerSettings) ?? throw new NullReferenceException();
+    var directory = Directory.CreateDirectory(downloadPath);
+    foreach (var file in directory.EnumerateFiles())
+    {
+        file.Delete();
+    }
     foreach (var mod in mods)
     {
         Console.WriteLine($"{mod.Name}: {mod.Id}");
         var modUri = await GetLatestDownloadUri(modClient, mod);
         Console.WriteLine(modUri);
+        await DownloadMod(modUri, directory);
     }
 }
 catch (JsonException e)
@@ -43,6 +50,21 @@ catch (Exception e)
 }
 
 return;
+
+async Task DownloadMod(Uri? downloadUri, DirectoryInfo storagePath)
+{
+    var filename = HttpUtility.ParseQueryString(downloadUri?.Query ?? "").Get("dl") ?? downloadUri?.AbsolutePath ?? "";
+    if (storagePath.EnumerateFiles(filename).Any())
+    {
+        Console.WriteLine($"File {filename} already exists.");
+        return;
+    }
+    using var client = new HttpClient();
+    using var response = await client.GetAsync(downloadUri);
+    await using var fileStream = File.Create(Path.Combine(storagePath.FullName, Path.GetFileName(filename)));
+    await response.Content.CopyToAsync(fileStream);
+    Console.WriteLine($"Downloaded {filename}");
+}
 
 async Task<Uri?> GetLatestDownloadUri(ModHttpClient modHttpClient, ModInput mod)
 {

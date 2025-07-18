@@ -6,3 +6,4 @@ riderModule.iml
 .idea/
 /vintagestory-mods-downloader.sln.DotSettings.user
 /src/vintagestory-mods-downloader/mods.json
+/src/vintagestory-mods-downloader/mods/
