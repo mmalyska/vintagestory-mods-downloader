@@ -1,11 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Web;
 using vintagestory_mods_downloader;
 
 Console.WriteLine("Getting list of mods...");
-var filepath = Environment.GetEnvironmentVariable("filepath") ?? "mods.json";
+var filepath = Environment.GetEnvironmentVariable("config-file") ?? "mods.json";
 var latestVersion = Environment.GetEnvironmentVariable("vs-version") ?? await GetLatestStable();
 var downloadPath = Environment.GetEnvironmentVariable("download-path") ?? "./mods";
 Console.WriteLine($"Using latest VS version: {latestVersion}");
@@ -69,13 +67,14 @@ async Task DownloadMod(Uri? downloadUri, DirectoryInfo storagePath)
 async Task<Uri?> GetLatestDownloadUri(ModHttpClient modHttpClient, ModInput mod)
 {
     var details = await modHttpClient.GetModDetails(mod.Id);
+    var latestSemVer = Semver.SemVersion.Parse(latestVersion, Semver.SemVersionStyles.Strict);
     if (details?.Releases is null)
     {
         Console.WriteLine($"No releases found for mod {mod.Id}");
     }
     else
     {
-        var releases = details.Releases.Where(x => x.Tags.Contains(latestVersion));
+        var releases = details.Releases.Where(x => x.SemVerTags.Any(t => t.CompareSortOrderTo(latestSemVer) <= 0));
         if (!releases.Any())
         {
             var release = details.Releases.First();

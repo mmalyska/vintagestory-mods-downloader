@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using Semver;
 
 namespace vintagestory_mods_downloader;
 
@@ -29,4 +30,9 @@ public class ModHttpClient : HttpClient
 
 public record ModEncapsulation(ModDetails Mod);
 public record ModDetails(List<ReleaseInfo> Releases);
-public record ReleaseInfo(int ReleaseId, Uri MainFile, HashSet<string> Tags, string ModVersion);
+
+public record ReleaseInfo(int ReleaseId, Uri MainFile, HashSet<string> Tags, string ModVersion)
+{
+    public SemVersion SemVer => SemVersion.Parse(ModVersion, SemVersionStyles.Strict);
+    public HashSet<SemVersion> SemVerTags => Tags.Select(x => SemVersion.Parse(x, SemVersionStyles.Strict)).ToHashSet();
+};
