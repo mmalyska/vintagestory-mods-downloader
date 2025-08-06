@@ -72,6 +72,96 @@ docker run \
   vs-mods-downloader
 ```
 
+### With Kubernetes
+
+You can use this tool as an init container in a Kubernetes deployment to download mods before starting your Vintage Story server:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vintagestory-server
+  labels:
+    app: vintagestory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vintagestory
+  template:
+    metadata:
+      labels:
+        app: vintagestory
+    spec:
+      volumes:
+        - name: mods-config
+          configMap:
+            name: vs-mods-config
+        - name: mods-storage
+          emptyDir: {}
+        - name: config
+          persistentVolumeClaim:
+             claimName: release-name
+      initContainers:
+        - name: download-mods
+          image: ghcr.io/mmalyska/vintagestory-mods-downloader:latest
+          env:
+            - name: vs-version
+              value: "1.20.12"
+            - name: download-path
+              value: /mods
+            - name: config-file
+              value: /app/mods.json
+          volumeMounts:
+            - name: mods-config
+              mountPath: /app/mods.json
+              readOnly: true
+              subPath: mods.json
+            - name: mods-storage
+              mountPath: /mods
+      containers:
+        - name: vintagestory-server
+          image: ghcr.io/mmalyska/vintagestory:latest
+          env:
+             - name: DATA_PATH
+               value: /config
+          args:
+             - --addModPath
+             - /mods
+          ports:
+            - containerPort: 42420
+          volumeMounts:
+            - name: mods-storage
+              mountPath: /mods
+            - name: config
+              mountPath: /config
+            
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vs-mods-config
+data:
+  mods.json: |
+    [
+      {
+        "name": "configlib",
+        "id": "1783"
+      },
+      {
+        "name": "vsimgui",
+        "id": "1745"
+      }
+    ]
+```
+
+This setup:
+1. Creates a ConfigMap with your mod configuration
+2. Uses an init container to download the mods before the main container starts
+3. Stores the mods in an emptyDir volume shared between the init container and the main Vintage Story server container
+
+Example of usage in my cluster with helm chart https://github.com/mmalyska/home-ops/tree/main/cluster/games/vintagestory
+
 ## Usage examples
 
 ### 1. Downloading mods for the latest version
