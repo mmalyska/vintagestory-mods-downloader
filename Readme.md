@@ -78,13 +78,15 @@ You can use this tool as an init container in a Kubernetes deployment to downloa
 
 ```yaml
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: vintagestory-server
   labels:
     app: vintagestory
 spec:
-  replicas: 1
+   replicas: 1
+   updateStrategy:
+      type: RollingUpdate
   selector:
     matchLabels:
       app: vintagestory
@@ -153,6 +155,31 @@ data:
         "id": "1745"
       }
     ]
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vs-mods-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vintagestory
+  labels:
+    app: vintagestory
+spec:
+  ports:
+  - port: 42420
+    name: game
+  selector:
+    app: vintagestory
+```
 ```
 
 This setup:
