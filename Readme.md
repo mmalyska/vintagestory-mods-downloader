@@ -180,7 +180,6 @@ spec:
   selector:
     app: vintagestory
 ```
-```
 
 This setup:
 1. Creates a ConfigMap with your mod configuration
