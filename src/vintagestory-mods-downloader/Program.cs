@@ -5,8 +5,9 @@ using VintagestoryModsDownloader;
 Console.WriteLine("Getting list of mods...");
 var filepath = Environment.GetEnvironmentVariable("config-file") ?? "mods.json";
 var latestVersion = Environment.GetEnvironmentVariable("vs-version") ?? await GetLatestStable();
+var latestSemVer = Semver.SemVersion.Parse(latestVersion, Semver.SemVersionStyles.Strict);
 var downloadPath = Environment.GetEnvironmentVariable("download-path") ?? "./mods";
-Console.WriteLine($"Using latest VS version: {latestVersion}");
+Console.WriteLine($"Using latest VS version: {latestSemVer}");
 
 if (!File.Exists(filepath))
 {
@@ -71,7 +72,6 @@ async Task DownloadMod(Uri? downloadUri, DirectoryInfo storagePath)
 async Task<Uri?> GetLatestDownloadUri(ModHttpClient modHttpClient, ModInput mod)
 {
     var details = await modHttpClient.GetModDetails(mod.Id);
-    var latestSemVer = Semver.SemVersion.Parse(latestVersion, Semver.SemVersionStyles.Strict);
     if (details?.Releases is null)
     {
         Console.WriteLine($"No releases found for mod {mod.Id}");
