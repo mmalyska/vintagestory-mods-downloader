@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using System.Web;
-using vintagestory_mods_downloader;
+using VintagestoryModsDownloader;
 
 Console.WriteLine("Getting list of mods...");
 var filepath = Environment.GetEnvironmentVariable("config-file") ?? "mods.json";
@@ -32,7 +32,11 @@ try
     foreach (var mod in mods)
     {
         Console.WriteLine($"{mod.Name}: {mod.Id}");
-        var modUri = await GetLatestDownloadUri(modClient, mod);
+        Uri? modUri;
+        if (mod.Version != null)
+            modUri = await GetSelectedVersionDownloadUri(modClient, mod);
+        else
+            modUri = await GetLatestDownloadUri(modClient, mod);
         Console.WriteLine(modUri);
         await DownloadMod(modUri, directory);
     }
@@ -85,6 +89,34 @@ async Task<Uri?> GetLatestDownloadUri(ModHttpClient modHttpClient, ModInput mod)
         {
             var release = releases.First();
             Console.WriteLine($"Using matched release {release.ModVersion}");
+            return release.MainFile;
+        }
+    }
+
+    return null;
+}
+
+async Task<Uri?> GetSelectedVersionDownloadUri(ModHttpClient modHttpClient, ModInput mod)
+{
+    var details = await modHttpClient.GetModDetails(mod.Id);
+    var versionSemVer = Semver.SemVersion.Parse(mod.Version!, Semver.SemVersionStyles.Strict);
+    if (details?.Releases is null)
+    {
+        Console.WriteLine($"No releases found for mod {mod.Id}");
+    }
+    else
+    {
+        var releases = details.Releases.Where(x => x.SemVer.Equals(versionSemVer));
+        if (!releases.Any())
+        {
+            var release = details.Releases.First();
+            Console.WriteLine($"Using latest release {release.ModVersion}");
+            return release.MainFile;
+        }
+        else
+        {
+            var release = releases.First();
+            Console.WriteLine($"Using pinned release {release.ModVersion}");
             return release.MainFile;
         }
     }
