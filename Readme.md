@@ -168,4 +168,6 @@ docker run -v $(pwd)/mods.json:/app/mods.json -v $(pwd)/mods:/app/mods vs-mods-d
 
 ## License
 
-[License information]
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) - see the [LICENSE](LICENSE) file for details.
+
+AGPL-3.0 is a copyleft license that requires anyone who distributes your code or a derivative work to make the source available under the same terms, including when the software is served over a network. This means that if you run a modified version of this software on a server and people interact with it there, you have to make your modified source code available to them.
