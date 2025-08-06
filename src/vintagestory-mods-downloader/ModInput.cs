@@ -1,3 +1,3 @@
-﻿namespace vintagestory_mods_downloader;
+﻿namespace VintagestoryModsDownloader;
 
-public record ModInput(string Name, string Id);
+public record ModInput(string Name, string Id, string? Version = null);

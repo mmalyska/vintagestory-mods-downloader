@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Semver;
 
-namespace vintagestory_mods_downloader;
+namespace VintagestoryModsDownloader;
 
 public class ModHttpClient : HttpClient
 {
