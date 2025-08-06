@@ -103,7 +103,7 @@ spec:
           emptyDir: {}
         - name: config
           persistentVolumeClaim:
-             claimName: release-name
+             claimName: vs-config
       initContainers:
         - name: download-mods
           image: ghcr.io/mmalyska/vintagestory-mods-downloader:latest
@@ -159,7 +159,7 @@ data:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: vs-mods-pvc
+  name: vs-config
 spec:
   accessModes:
     - ReadWriteOnce
